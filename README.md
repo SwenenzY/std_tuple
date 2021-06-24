@@ -1,2 +1,2 @@
 # std_tuple
-std::tuple find item in list
+if u liked plz give your star <3
