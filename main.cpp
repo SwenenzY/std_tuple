@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <tuple>
 
@@ -2269,19 +2270,80 @@ std::tuple<const char*, const char*, int> item_tuple[] = {
 
 };
 
+bool m_strcmp(char* a, char* b) {
+	if ((uintptr_t)a == 0x00000000ffffffff || (uintptr_t)b == 0x00000000ffffffff)
+		return false;
+	if ((uintptr_t)a == 0x000000000000007d || (uintptr_t)b == 0x000000000000007d)
+		return false;
+
+	if (!a || !b) return !a && !b;
+
+	int ret = 0;
+	unsigned char* p1 = (unsigned char*)a;
+	unsigned char* p2 = (unsigned char*)b;
+	while (!(ret = *p1 - *p2) && *p2)
+		++p1, ++p2;
+
+	return ret == 0;
+}
+
+char* m_strstr(char* input, const char* find)
+{
+	do {
+		const char* p, * q;
+		for (p = input, q = find; *q != '\0' && *p == *q; p++, q++) {}
+		if (*q == '\0') {
+			return input;
+		}
+	} while (*(input++) != '\0');
+	return 0;
+}
+
+
+char* strrep(char* str, char* o_s, char* n_s)
+{
+	char* newstr = NULL;
+	char* c = NULL;
+
+	if ((c = m_strstr(str, o_s)) == NULL) {
+		return str;
+	}
+
+	if ((newstr = (char*)malloc((int)sizeof(str) -
+		(int)sizeof(o_s) +
+		(int)sizeof(n_s) + 1)) == NULL) {
+		return NULL;
+	}
+
+	strncpy(newstr, str, c - str);
+	sprintf(newstr + (c - str), "%s%s", n_s, c + strlen(o_s));
+
+	return newstr;
+}
+
 Item get_item( const char* negative_name ) {
 	Item my_item { "" , 0 };
-	for (const auto& item : item_tuple)
-		if ((const char*)std::get<0>(item) == negative_name) {
-			my_item = Item{ (const char*)std::get<1>(item) , std::get<2>(item) }; break; }
+	for (const auto& item : item_tuple) 
+		if (m_strcmp((char*)item._Myfirst._Val, (char*)negative_name)) { my_item = Item{ (const char*)std::get<1>(item) , std::get<2>(item) }; continue; }
 	return my_item;
 }
+
 
 int main(int argc, char* argv[])
 {
 	// made by swenenzy for eft cheat .D
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+	char name_buffer[255];
+	sprintf(name_buffer, "%s", "item_quest_letter(Clone)");
+
+	char old_s[] = "(Clone)";
+	char new_s[] = "";
+	char* str_new = strrep(name_buffer, old_s, new_s);
+	// test item
+	std::cout << get_item(str_new).positive_name << std::endl;
+	std::cout << get_item(str_new).positive_price << std::endl << std::endl;
 
 	// first item
 	std::cout << get_item("item_barter_energy_powerbank").positive_name << std::endl;
